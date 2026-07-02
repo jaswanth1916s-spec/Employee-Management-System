@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Employees | Employee Management System{% endblock %}
+{% block page_title %}Employee Directory{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    
+    <!-- Action Bar -->
+    <div class="row mb-4 align-items-center justify-content-between g-3">
+        <div class="col-12 col-md-6 col-lg-5">
+            <div class="input-group search-bar-container shadow-sm rounded-3 overflow-hidden border">
+                <span class="input-group-text bg-white border-0"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" id="employeeSearchInput" class="form-control border-0 py-2" placeholder="Search by name, ID, department, or designation..." value="{{ query }}">
+            </div>
+        </div>
+        <div class="col-12 col-md-auto">
+            <a href="{% url 'employee_add' %}" class="btn btn-indigo btn-custom shadow-sm">
+                <i class="bi bi-person-plus-fill"></i> Add New Employee
+            </a>
+        </div>
+    </div>
+
+    <!-- Hidden input to store current sorting field for JavaScript AJAX search -->
+    <input type="hidden" id="currentSortField" value="{{ sort_by }}">
+
+    <!-- Table Card -->
+    <div class="card card-custom">
+        <div class="card-body p-0">
+            <div class="table-responsive table-custom-container border-0 m-0">
+                <table class="table table-custom align-middle">
+                    <thead>
+                        <tr>
+                            <th>
+                                <a href="?sort_by={% if sort_by == 'employee_id' %}-created_at{% else %}employee_id{% endif %}&q={{ query }}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                                    Employee ID 
+                                    {% if sort_by == 'employee_id' %}<i class="bi bi-caret-up-fill text-primary"></i>{% else %}<i class="bi bi-caret-down"></i>{% endif %}
+                                </a>
+                            </th>
+                            <th>Photo</th>
+                            <th>
+                                <a href="?sort_by={% if sort_by == 'full_name' %}-created_at{% else %}full_name{% endif %}&q={{ query }}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                                    Name 
+                                    {% if sort_by == 'full_name' %}<i class="bi bi-caret-up-fill text-primary"></i>{% else %}<i class="bi bi-caret-down"></i>{% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?sort_by={% if sort_by == 'department' %}-created_at{% else %}department{% endif %}&q={{ query }}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                                    Department 
+                                    {% if sort_by == 'department' %}<i class="bi bi-caret-up-fill text-primary"></i>{% else %}<i class="bi bi-caret-down"></i>{% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?sort_by={% if sort_by == 'designation' %}-created_at{% else %}designation{% endif %}&q={{ query }}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                                    Designation 
+                                    {% if sort_by == 'designation' %}<i class="bi bi-caret-up-fill text-primary"></i>{% else %}<i class="bi bi-caret-down"></i>{% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?sort_by={% if sort_by == 'phone' %}-created_at{% else %}phone{% endif %}&q={{ query }}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                                    Phone 
+                                    {% if sort_by == 'phone' %}<i class="bi bi-caret-up-fill text-primary"></i>{% else %}<i class="bi bi-caret-down"></i>{% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?sort_by={% if sort_by == 'status' %}-created_at{% else %}status{% endif %}&q={{ query }}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                                    Status 
+                                    {% if sort_by == 'status' %}<i class="bi bi-caret-up-fill text-primary"></i>{% else %}<i class="bi bi-caret-down"></i>{% endif %}
+                                </a>
+                            </th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeeTableBody">
+                        {% include 'employees/partial_list_rows.html' %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Pagination Section -->
+        {% if page_obj.has_other_pages %}
+        <div class="card-footer bg-transparent border-0 py-4 px-4" id="paginationContainer">
+            <nav aria-label="Page navigation" class="d-flex align-items-center justify-content-between">
+                <div class="text-muted small">
+                    Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} employees
+                </div>
+                <ul class="pagination pagination-custom m-0 gap-1">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link border-0 rounded-3 text-secondary py-2 px-3" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&sort_by={{ sort_by }}" aria-label="Previous">
+                            <span aria-hidden="true"><i class="bi bi-chevron-left"></i></span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link border-0 rounded-3 bg-indigo text-white py-2 px-3">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link border-0 rounded-3 text-secondary py-2 px-3" href="?page={{ num }}&q={{ query }}&sort_by={{ sort_by }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link border-0 rounded-3 text-secondary py-2 px-3" href="?page={{ page_obj.next_page_number }}&q={{ query }}&sort_by={{ sort_by }}" aria-label="Next">
+                            <span aria-hidden="true"><i class="bi bi-chevron-right"></i></span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Bootstrap Confirmation Modal for Deletion -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title font-weight-bold d-flex align-items-center gap-2 text-danger" id="deleteConfirmModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-4 py-3">
+                <p class="m-0">Are you sure you want to delete employee <strong id="modal-employee-name"></strong> (<span id="modal-employee-id" class="text-muted"></span>)?</p>
+                <p class="text-muted small mt-2 mb-0">This action is permanent and cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-0 pb-4 px-4">
+                <button type="button" class="btn btn-light btn-custom" data-bs-dismiss="modal">Cancel</button>
+                <form id="delete-confirm-form" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-custom">Delete Employee</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

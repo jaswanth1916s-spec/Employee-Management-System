@@ -1,0 +1,46 @@
+{% for emp in page_obj %}
+<tr>
+    <td class="font-weight-bold">{{ emp.employee_id }}</td>
+    <td>
+        {% if emp.profile_photo %}
+            <img src="{{ emp.profile_photo.url }}" alt="{{ emp.full_name }}" class="avatar-img">
+        {% else %}
+            <div class="avatar-placeholder">
+                {{ emp.full_name|slice:":2"|upper }}
+            </div>
+        {% endif %}
+    </td>
+    <td>{{ emp.full_name }}</td>
+    <td>{{ emp.department }}</td>
+    <td>{{ emp.designation }}</td>
+    <td>{{ emp.phone }}</td>
+    <td>
+        <span class="badge-custom {% if emp.status == 'Active' %}badge-active{% else %}badge-inactive{% endif %}">
+            {{ emp.status }}
+        </span>
+    </td>
+    <td>
+        <div class="d-flex gap-2">
+            <a href="{% url 'employee_detail' emp.pk %}" class="btn btn-light btn-custom-sm px-2 py-1" title="View Details">
+                <i class="bi bi-eye-fill"></i>
+            </a>
+            <a href="{% url 'employee_edit' emp.pk %}" class="btn btn-outline-secondary btn-custom-sm px-2 py-1" title="Edit Details">
+                <i class="bi bi-pencil-fill"></i>
+            </a>
+            <button type="button" class="btn btn-outline-danger btn-custom-sm px-2 py-1" 
+                    data-bs-toggle="modal" data-bs-target="#deleteConfirmModal"
+                    data-id="{{ emp.employee_id }}" data-name="{{ emp.full_name }}"
+                    data-url="{% url 'employee_delete' emp.pk %}" title="Delete Employee">
+                <i class="bi bi-trash-fill"></i>
+            </button>
+        </div>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="8" class="text-center py-5 text-muted">
+        <i class="bi bi-search fs-2 d-block mb-2"></i>
+        No matching employee records found.
+    </td>
+</tr>
+{% endfor %}

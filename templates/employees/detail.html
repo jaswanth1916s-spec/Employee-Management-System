@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ employee.full_name }} | Employee Details{% endblock %}
+{% block page_title %}Employee Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Action Headers -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <a href="{% url 'employee_list' %}" class="btn btn-light btn-custom">
+            <i class="bi bi-arrow-left"></i> Directory
+        </a>
+        <div class="d-flex gap-2">
+            <a href="{% url 'employee_edit' employee.pk %}" class="btn btn-outline-secondary btn-custom">
+                <i class="bi bi-pencil-fill"></i> Edit
+            </a>
+            <button type="button" class="btn btn-danger btn-custom" 
+                    data-bs-toggle="modal" data-bs-target="#deleteConfirmModal"
+                    data-id="{{ employee.employee_id }}" data-name="{{ employee.full_name }}"
+                    data-url="{% url 'employee_delete' employee.pk %}">
+                <i class="bi bi-trash-fill"></i> Delete
+            </button>
+        </div>
+    </div>
+
+    <!-- Profile Detail Layout -->
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <div class="profile-detail-card mb-4">
+                <div class="profile-header-bg"></div>
+                
+                <!-- Avatar & Core Info -->
+                <div class="profile-avatar-container">
+                    {% if employee.profile_photo %}
+                        <img src="{{ employee.profile_photo.url }}" alt="{{ employee.full_name }}" class="profile-avatar border border-4 border-white shadow">
+                    {% else %}
+                        <div class="profile-avatar-placeholder border border-4 border-white shadow">
+                            {{ employee.full_name|slice:":2"|upper }}
+                        </div>
+                    {% endif %}
+                    
+                    <h3 class="mt-3 mb-1">{{ employee.full_name }}</h3>
+                    <p class="text-muted mb-2">{{ employee.designation }} &bull; <strong class="text-indigo">{{ employee.department }}</strong></p>
+                    <span class="badge-custom {% if employee.status == 'Active' %}badge-active{% else %}badge-inactive{% endif %}">
+                        {{ employee.status }}
+                    </span>
+                </div>
+
+                <!-- Profile Detailed Metadata Grid -->
+                <div class="card-body p-4 border-top">
+                    <h5 class="card-title mb-4 border-bottom pb-2"><i class="bi bi-person-vcard text-primary me-2"></i>Personal & Employment Details</h5>
+                    
+                    <div class="row g-4">
+                        <div class="col-12 col-md-6">
+                            <div class="detail-row">
+                                <span class="detail-label">Employee ID</span>
+                                <span class="detail-value text-indigo">{{ employee.employee_id }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Gender</span>
+                                <span class="detail-value">{{ employee.gender }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Date of Joining</span>
+                                <span class="detail-value">{{ employee.date_of_joining|date:"F d, Y" }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Salary</span>
+                                <span class="detail-value">${{ employee.salary|floatformat:2 }} / month</span>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="detail-row">
+                                <span class="detail-label">Email Address</span>
+                                <span class="detail-value"><a href="mailto:{{ employee.email }}" class="text-decoration-none">{{ employee.email }}</a></span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Phone Number</span>
+                                <span class="detail-value">{{ employee.phone }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Record Created</span>
+                                <span class="detail-value">{{ employee.created_at|date:"F d, Y" }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Full Address -->
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded-3">
+                                <h6 class="font-weight-bold text-secondary mb-2"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Address</h6>
+                                <p class="mb-0 text-dark" style="line-height: 1.6;">{{ employee.address }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmation for detail deletion -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title font-weight-bold d-flex align-items-center gap-2 text-danger" id="deleteConfirmModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-4 py-3">
+                <p class="m-0">Are you sure you want to delete employee <strong id="modal-employee-name"></strong> (<span id="modal-employee-id" class="text-muted"></span>)?</p>
+                <p class="text-muted small mt-2 mb-0">This action is permanent and cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-0 pb-4 px-4">
+                <button type="button" class="btn btn-light btn-custom" data-bs-dismiss="modal">Cancel</button>
+                <form id="delete-confirm-form" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-custom">Delete Employee</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

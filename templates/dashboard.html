@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | Employee Management System{% endblock %}
+{% block page_title %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Stat Cards Row -->
+    <div class="row g-4 mb-4">
+        <!-- Total Employees -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card card-custom card-stat h-100">
+                <div class="card-body d-flex align-items-center justify-content-between p-4">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05rem;">Total Employees</h6>
+                        <h2 class="m-0 font-weight-bold" style="font-size: 2rem;">{{ total_employees }}</h2>
+                    </div>
+                    <div class="stat-icon primary">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Active Employees -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card card-custom card-stat active-emp h-100">
+                <div class="card-body d-flex align-items-center justify-content-between p-4">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05rem;">Active</h6>
+                        <h2 class="m-0 font-weight-bold text-success" style="font-size: 2rem;">{{ active_employees }}</h2>
+                    </div>
+                    <div class="stat-icon success">
+                        <i class="bi bi-person-check-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Inactive Employees -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card card-custom card-stat inactive-emp h-100">
+                <div class="card-body d-flex align-items-center justify-content-between p-4">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05rem;">Inactive</h6>
+                        <h2 class="m-0 font-weight-bold text-danger" style="font-size: 2rem;">{{ inactive_employees }}</h2>
+                    </div>
+                    <div class="stat-icon danger">
+                        <i class="bi bi-person-x-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Departments Count -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card card-custom card-stat dept-count h-100">
+                <div class="card-body d-flex align-items-center justify-content-between p-4">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05rem;">Departments</h6>
+                        <h2 class="m-0 font-weight-bold text-warning" style="font-size: 2rem;">{{ departments_count }}</h2>
+                    </div>
+                    <div class="stat-icon warning">
+                        <i class="bi bi-building-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card card-custom">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">Quick Actions</h5>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="{% url 'employee_add' %}" class="btn btn-indigo btn-custom">
+                            <i class="bi bi-person-plus-fill"></i> Add New Employee
+                        </a>
+                        <a href="{% url 'employee_list' %}" class="btn btn-outline-secondary btn-custom">
+                            <i class="bi bi-person-lines-fill"></i> View Employee Directory
+                        </a>
+                        <a href="{% url 'admin_profile' %}" class="btn btn-outline-secondary btn-custom">
+                            <i class="bi bi-person-fill-gear"></i> Admin Account Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recently Added Employees -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-custom">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between">
+                    <h5 class="card-title m-0">Recently Added Employees</h5>
+                    <a href="{% url 'employee_list' %}" class="btn btn-link text-decoration-none text-primary p-0">
+                        View All <i class="bi bi-arrow-right-short"></i>
+                    </a>
+                </div>
+                <div class="card-body p-4">
+                    {% if recent_employees %}
+                    <div class="table-responsive table-custom-container border-0">
+                        <table class="table table-custom align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Employee ID</th>
+                                    <th>Photo</th>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    <th>Designation</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for emp in recent_employees %}
+                                <tr>
+                                    <td class="font-weight-bold">{{ emp.employee_id }}</td>
+                                    <td>
+                                        {% if emp.profile_photo %}
+                                            <img src="{{ emp.profile_photo.url }}" alt="{{ emp.full_name }}" class="avatar-img">
+                                        {% else %}
+                                            <div class="avatar-placeholder">
+                                                {{ emp.full_name|slice:":2"|upper }}
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ emp.full_name }}</td>
+                                    <td>{{ emp.department }}</td>
+                                    <td>{{ emp.designation }}</td>
+                                    <td>
+                                        <span class="badge-custom {% if emp.status == 'Active' %}badge-active{% else %}badge-inactive{% endif %}">
+                                            {{ emp.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'employee_detail' emp.pk %}" class="btn btn-light btn-custom-sm py-1 px-3" title="View Profile">
+                                            <i class="bi bi-eye-fill"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-people fs-1 d-block mb-3"></i>
+                        <p class="mb-0">No employee records found. Click "Add New Employee" to get started.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
